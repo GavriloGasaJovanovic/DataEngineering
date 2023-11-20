@@ -11,7 +11,7 @@ event_data_error_len = 0
 logic_error_len = 0
 
 
-
+# function that sees if our data has a valid unix timestamp
 def is_unix_timestamp(timestamp):
     try:
         timestamp_float = float(timestamp)
@@ -19,6 +19,7 @@ def is_unix_timestamp(timestamp):
     except ValueError:
         return False
 
+# Filter that checks the attributes of our data
 def filter_event_data_function(event_data, event_type):
     if event_data['user_id'] is None:
         return { 'passed': False, 'reason': 'Event data error: Doesn\'t have user id' }
@@ -36,6 +37,8 @@ def filter_event_data_function(event_data, event_type):
 
     return { 'passed': True }
 
+# Filter that checks if the logic is correct
+# ie. you cannot login without previous registration
 def filter_by_logic_function(user_id, event_type):
     if event_type == 'registration':
         if user_id in user_activity_data:
@@ -61,6 +64,7 @@ def filter_by_logic_function(user_id, event_type):
             return { 'passed': False, 'reason': 'Transaction error: This user must be login'}
     return { 'passed': True }
 
+# Filter one row of data
 def filter_event_function(line):
     global event_data_error_len
     global logic_error_len
@@ -86,6 +90,7 @@ def filter_event_function(line):
     event_id_set.add(line['event_id'])
     return { 'passed': True }
 
+# Function that read file
 def read_file(file_path):
     result = []
     with open(file_path, 'r') as file:
@@ -95,6 +100,9 @@ def read_file(file_path):
             result.append(json_obj)
     return result
 
+# Function that parses valid row from invalid row
+# We store all invalid row in different file and they all have different reason for why they were discarded
+# If you run the code, rows with logical errors were 11382, and rows with bad attributes 2
 def parse_data(data):
     valid_data = []
     invalid_data = []
